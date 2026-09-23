@@ -1,0 +1,27 @@
+body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--color-page);
+            color: var(--color-text);
+        }
+        .font-serif-heading {
+            font-family: 'Cinzel', serif;
+        }
+        .nacre-card {
+            background: linear-gradient(135deg, color-mix(in srgb, var(--color-surface-alt) 60%, transparent) 0%, color-mix(in srgb, var(--color-surface) 90%, transparent) 100%);
+            backdrop-filter: blur(12px);
+            border: 1px solid color-mix(in srgb, var(--color-border) 20%, transparent);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--color-page);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-surface-hover);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--color-accent);
+        }

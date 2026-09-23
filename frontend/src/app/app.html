@@ -1,0 +1,26 @@
+<header class="site-header">
+  <nav class="nav shell" aria-label="Navegación principal">
+    <a routerLink="/inicio" class="brand" aria-label="BELILO, ir a inicio">BELILO<span></span></a>
+    <div class="nav-links">
+      <a routerLink="/inicio" routerLinkActive="active" ariaCurrentWhenActive="page">Inicio</a>
+      <a routerLink="/compra" routerLinkActive="active" ariaCurrentWhenActive="page">Compra</a>
+      <a routerLink="/admin" routerLinkActive="active" ariaCurrentWhenActive="page">Admin</a>
+    </div>
+    <button type="button" class="nav-cart" (click)="drawer.open()" [attr.aria-expanded]="drawer.isOpen()" aria-controls="cart-drawer" aria-label="Abrir bolsa de compras">
+      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 8h14l1 12H4L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg>
+      <span>Mi bolsa</span><span class="count">{{ cart.count() }}</span>
+    </button>
+  </nav>
+</header>
+<main class="shell page"><router-outlet /></main>
+<footer class="site-footer shell"><span>BELILO · Joyería artesanal</span><span>Piezas únicas, momentos tuyos.</span></footer>
+
+@if (drawer.isOpen()) {
+  <div class="drawer-layer">
+    <button type="button" class="drawer-backdrop" aria-label="Cerrar bolsa de compras" (click)="drawer.close()"></button>
+    <aside id="cart-drawer" class="cart-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
+      <div class="drawer-header"><div><p class="eyebrow">Tu selección</p><h2 id="drawer-title">Bolsa de compras <span>({{ cart.count() }})</span></h2></div><button type="button" class="drawer-close" aria-label="Cerrar bolsa" (click)="drawer.close()">×</button></div>
+      <div class="drawer-scroll"><app-checkout [compact]="true" /></div>
+    </aside>
+  </div>
+}

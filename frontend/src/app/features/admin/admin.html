@@ -1,0 +1,90 @@
+<section class="section narrow-top admin-heading">
+  <div><p class="eyebrow">BELILO · Gestión</p><h1>Tu tienda, en orden.</h1><p class="muted">Administra cada pieza, acompaña los pedidos y prepara las entregas.</p></div>
+  @if (authenticated()) { <button type="button" class="button secondary small" (click)="logout()">Cerrar sesión</button> }
+</section>
+
+@if (!authenticated()) {
+  <section class="form-panel admin-login">
+    <p class="eyebrow">Acceso propietario</p><h2>Bienvenida a BELILO</h2>
+    <p class="muted">Ingresa la contraseña de administración para continuar.</p>
+    <form (ngSubmit)="login()" class="stack">
+      <label>Contraseña<input name="adminPassword" type="password" required autocomplete="off" [(ngModel)]="loginToken" placeholder="Tu contraseña"></label>
+      @if (loginError()) { <p class="error" role="alert">{{ loginError() }}</p> }
+      <button type="submit" class="button primary full" [disabled]="!loginToken.trim() || loginPending()">{{ loginPending() ? 'Comprobando...' : 'Entrar al panel' }}</button>
+    </form>
+  </section>
+} @else {
+  <div class="admin-overview" aria-label="Resumen de la tienda">
+    <div><span class="eyebrow">Catálogo</span><strong>{{ catalog.products().length }}</strong><span>Piezas publicadas</span></div>
+    <div><span class="eyebrow">Por atender</span><strong>{{ pendingCount() }}</strong><span>Pedidos pendientes</span></div>
+    <div><span class="eyebrow">Entregados</span><strong>{{ deliveredCount() }}</strong><span>Pedidos completados</span></div>
+  </div>
+  <nav class="admin-tabs" aria-label="Secciones de administración">
+    <button type="button" [class.selected]="tab() === 'products'" (click)="selectTab('products')">Inventario</button>
+    <button type="button" [class.selected]="tab() === 'orders'" (click)="selectTab('orders')">Pedidos <span class="tab-count">{{ pendingCount() }}</span></button>
+    <button type="button" [class.selected]="tab() === 'delivery'" (click)="selectTab('delivery')">Entrega y WhatsApp</button>
+  </nav>
+  @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+  @if (success()) { <p class="success" role="status">{{ success() }}</p> }
+
+  @if (tab() === 'products') {
+    <div class="admin-layout">
+      <section class="form-panel"><p class="eyebrow">Catálogo</p><h2>{{ editingId === null ? 'Añadir pieza' : 'Editar pieza' }}</h2>
+        <form (ngSubmit)="saveProduct()" #productForm="ngForm" class="stack">
+          <label>Nombre de la pieza<input name="name" required [(ngModel)]="product.name" placeholder="Ej. Manilla de nácar"></label>
+          <div class="form-grid admin-field-pair"><label>Categoría<select name="categoryChoice" required [(ngModel)]="categoryChoice"><option value="" disabled>Selecciona una categoría</option>@for (category of categories(); track category) { <option [value]="category">{{ category }}</option> }<option value="Otra">Otra categoría…</option></select></label><label>Precio (Bs)<input name="price" type="number" min="0.01" step="0.01" required [(ngModel)]="product.price"></label></div>
+          @if (categoryChoice === 'Otra') { <label>Nueva categoría<input name="customCategory" required maxlength="60" [(ngModel)]="customCategory" placeholder="Escribe el nombre de la categoría"></label> }
+          <label>Unidades disponibles<input name="stock" type="number" min="0" step="1" required [(ngModel)]="product.stock"><small class="field-hint">El stock se descuenta al marcar un pedido como entregado.</small></label>
+          <div class="image-upload-field"><label for="productImages">Fotos del producto <small class="field-hint">Selecciona hasta 8 fotos JPG, PNG o WebP desde tu equipo. La primera será la portada.</small></label><input id="productImages" type="file" accept="image/jpeg,image/png,image/webp" multiple (change)="onImagesSelected($event)" [disabled]="uploadingImages() || product.images.length >= 8"><span class="field-hint">{{ uploadingImages() ? 'Subiendo fotos…' : product.images.length + ' de 8 fotos añadidas' }}</span></div>
+          @if (product.images.length) { <div class="admin-image-grid">@for (image of product.images; track image; let index = $index) { <div class="admin-image-preview"><img [src]="image" [alt]="'Foto ' + (index + 1) + ' del producto'"><span>{{ index === 0 ? 'Portada' : 'Foto ' + (index + 1) }}</span><div><button type="button" class="text-button" [disabled]="index === 0" (click)="makeCover(index)">Portada</button><button type="button" class="text-button danger" (click)="removeImage(index)">Quitar</button></div></div> }</div> }
+          <label>Descripción<textarea name="description" rows="4" [(ngModel)]="product.description" placeholder="Detalles de materiales, color y acabado"></textarea></label>
+          <div class="actions"><button type="submit" class="button primary" [disabled]="productForm.invalid || saving() || uploadingImages()">{{ saving() ? 'Guardando...' : 'Guardar pieza' }}</button>@if (editingId !== null) { <button type="button" class="button secondary" [disabled]="uploadingImages()" (click)="resetForm()">Cancelar</button> }</div>
+        </form>
+      </section>
+      <section><div class="section-heading"><div><p class="eyebrow">Piezas disponibles</p><h2>Inventario</h2></div><span class="muted">{{ inventoryProducts().length }} de {{ catalog.products().length }} productos</span></div>
+        <label class="inventory-filter">Filtrar por categoría<select [value]="inventoryCategory()" (change)="inventoryCategory.set($any($event.target).value)"><option value="Todas">Todas las categorías</option>@for (category of categories(); track category) { <option [value]="category">{{ category }}</option> }</select></label>
+        @if (catalog.loading()) { <p class="muted">Cargando inventario...</p> }
+        @else if (catalog.error()) { <div class="empty-state"><p>{{ catalog.error() }}</p><button type="button" class="button secondary" (click)="catalog.load(true)">Reintentar</button></div> }
+        @else if (!catalog.products().length) { <div class="empty-state">Todavía no hay productos.</div> }
+        @else if (!inventoryProducts().length) { <div class="empty-state">No hay productos en esta categoría.</div> }
+        @else { <div class="admin-items">@for (item of inventoryProducts(); track item.id) {
+          <article class="admin-item"><div class="cart-thumb">@if (primaryImage(item)) { <img [src]="primaryImage(item)" [alt]="item.name"> }</div>
+            <div class="admin-item-copy"><span class="eyebrow">{{ item.category }}</span><h3>{{ item.name }}</h3><div class="inventory-meta"><strong>{{ item.price | currency:'BOB':'Bs ' }}</strong><span class="stock-pill" [class.out-of-stock]="item.stock === 0">{{ item.stock === 0 ? 'Sin stock' : item.stock + ' disponibles' }}</span></div></div>
+            <div class="item-actions"><button type="button" class="text-button" [disabled]="uploadingImages()" (click)="edit(item)">Editar</button><button type="button" class="text-button danger" [disabled]="uploadingImages()" (click)="deleteProduct(item)">Eliminar</button></div>
+          </article>
+        }</div> }
+      </section>
+    </div>
+  }
+
+  @if (tab() === 'orders') {
+    <div class="section-heading"><div><p class="eyebrow">Seguimiento</p><h2>Pedidos recibidos</h2></div><button type="button" class="button secondary small" (click)="loadOrders()">Actualizar</button></div>
+    @if (ordersLoading()) { <p class="muted">Cargando pedidos...</p> }
+    @else if (!error() && !orders().length) { <div class="empty-state"><strong>Sin pedidos por ahora</strong><p>Los pedidos confirmados por compradores aparecerán aquí.</p></div> }
+    @else { <div class="order-grid">@for (order of orders(); track order.id) {
+      <article class="order-card detailed">
+        <div class="order-top"><div><span class="eyebrow">Pedido #{{ order.id }}</span><h3>{{ order.clientName }}</h3><p>{{ order.clientPhone }}</p></div><span class="status" [class.delivered]="order.status === 'entregado'" [class.undelivered]="order.status === 'no_entregado'">{{ order.status === 'no_entregado' ? 'No entregado' : order.status === 'entregado' ? 'Entregado' : 'Pendiente' }}</span></div>
+        <div class="order-info"><span><b>Tipo de entrega</b>{{ order.deliveryType === 'otra_ciudad' ? 'Envío a otra ciudad' : 'Entrega en la ciudad' }}</span><span><b>{{ order.deliveryType === 'otra_ciudad' ? 'Departamento' : 'Punto de entrega' }}</b>{{ order.deliveryLocation }}</span>@if (order.deliveryAddress) { <span><b>Dirección de envío</b>{{ order.deliveryAddress }}</span> }<span><b>Horario</b>{{ order.deliveryTime }}</span></div>
+        <div class="order-lines"><b>Detalle del pedido</b>@for (item of order.items; track item.productId) { <div><span>{{ item.quantity }} × {{ item.name || productName(item.productId) }}</span>@if (item.unitPrice !== undefined) { <span>{{ item.unitPrice * item.quantity | currency:'BOB':'Bs ' }}</span> }</div> }</div>
+        <div class="order-footer"><div><small>@if (order.createdAt) { {{ order.createdAt | date:'short' }} }</small><strong>Total {{ order.total | currency:'BOB':'Bs ' }}</strong></div>
+          @if (order.status === 'pendiente') { <div class="order-actions"><button type="button" class="button secondary small" [disabled]="updatingOrderId() !== null" (click)="setOrderStatus(order, 'no_entregado')">No entregado</button><button type="button" class="button primary small" [disabled]="updatingOrderId() !== null" (click)="setOrderStatus(order, 'entregado')">Marcar entregado</button></div> }
+        </div>
+      </article>
+    }</div> }
+  }
+
+  @if (tab() === 'delivery') {
+    <div class="section-heading"><div><p class="eyebrow">Coordinación</p><h2>Entregas y asesores</h2></div><button type="button" class="button secondary small" (click)="loadSettings()">Actualizar</button></div>
+    @if (settingsLoading()) { <p class="muted">Cargando configuración...</p> }
+    @else if (settings(); as delivery) {
+      <div class="form-panel delivery-form"><h3>Puntos de entrega</h3><p class="muted">El comprador elegirá una de estas ubicaciones en su carrito.</p>
+        <div class="stack">@for (zone of delivery.zones; track zone.id) { <div class="zone-row">@if (zone.image) { <img [src]="zone.image" [alt]="zone.name"> }<span>{{ zone.name }}</span><button type="button" class="text-button danger" (click)="removeZone(zone.id)">Quitar</button></div> }</div>
+        <div class="form-grid delivery-add-zone"><label>Nuevo punto<input [(ngModel)]="zoneName" name="zoneName" placeholder="Nombre de la ubicación"></label><div class="image-upload-field"><label for="zoneImage">Imagen de referencia (opcional)</label><input id="zoneImage" type="file" accept="image/jpeg,image/png,image/webp" (change)="uploadZoneImage($event)" [disabled]="uploadingZoneImage()"><small class="field-hint">{{ uploadingZoneImage() ? 'Subiendo imagen…' : zoneImage ? 'Imagen cargada' : 'JPG, PNG o WebP' }}</small></div></div>
+        @if (zoneImage) { <img class="zone-image-preview" [src]="zoneImage" alt="Vista previa de la ubicación"> }
+        <button type="button" class="button secondary small" [disabled]="uploadingZoneImage()" (click)="addZone()">+ Añadir ubicación</button>
+        <div class="form-grid delivery-settings-grid"><label>Horarios disponibles <small class="field-hint">Uno por línea</small><textarea rows="5" name="times" [(ngModel)]="timesText"></textarea></label><label>Números de WhatsApp <small class="field-hint">Uno por línea. Si tiene 8 dígitos, se añadirá +591.</small><textarea rows="5" name="phones" [(ngModel)]="phonesText"></textarea></label></div>
+        <button type="button" class="button primary" [disabled]="saving()" (click)="saveSettings()">{{ saving() ? 'Guardando...' : 'Guardar cambios' }}</button>
+      </div>
+    }
+  }
+}

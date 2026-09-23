@@ -1,2 +1,3 @@
 .netlify/
+.frontend-git-backup/
 node_modules/

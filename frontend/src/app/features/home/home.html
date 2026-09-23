@@ -1,0 +1,52 @@
+<section class="hero">
+  <div class="hero-copy">
+    <p class="eyebrow">exclusividad y variedad</p>
+    <h1>Colección BELILO</h1>
+    <p>Accesorios artesanales, perlitas, piedras naturales y dijes que acompañan tus momentos especiales. Encuentra esa pieza que se siente tuya.</p>
+    <button type="button" class="button primary" (click)="scrollToCatalog()">Descubrir la colección <span aria-hidden="true">↗</span></button>
+    <span class="hero-note">✦ &nbsp; Hechas para acompañarte <3 </span>
+  </div>
+  <div class="hero-art" aria-hidden="true">
+    @if (catalog.products()[0]; as featured) { @if (primaryImage(featured)) { <img class="hero-product-img" [src]="primaryImage(featured)" alt=""> } } @else { <span class="hero-ring"></span> }
+    <span class="hero-spark"></span>
+  </div>
+</section>
+
+<section id="catalogo" class="section catalog-section">
+  <div class="section-heading"><div><h2>Explora la colección</h2></div><span class="muted">{{ visibleProducts().length }} piezas para descubrir</span></div>
+  <div class="filters">
+    <div class="chips" aria-label="Categorías">
+      @for (item of categories(); track item) { <button type="button" class="chip" [class.selected]="category() === item" (click)="category.set(item)">{{ item }}</button> }
+    </div>
+    <label class="search"><span class="sr-only">Buscar productos</span><input type="search" placeholder="Buscar una pieza especial..." [value]="query()" (input)="search($event)"></label>
+  </div>
+
+  @if (notice()) { <p class="success catalog-notice" role="status">{{ notice() }} <button type="button" class="text-button" (click)="drawer.open()">Abrir mi bolsa →</button></p> }
+  @if (catalog.loading()) { <div class="empty-state" role="status">Cargando catálogo...</div> }
+  @else if (catalog.error()) { <div class="empty-state" role="alert"><strong>{{ catalog.error() }}</strong><button class="button secondary" type="button" (click)="catalog.load(true)">Reintentar</button></div> }
+  @else {
+    <ng-template #productCard let-product>
+      <article class="product-card">
+        <app-product-gallery [product]="product" (view)="selectedProduct.set(product)" />
+        <div class="product-info"><div class="product-meta"><span class="eyebrow">{{ product.category }}</span><span class="availability" [class.sold-out]="product.stock === 0">{{ product.stock === 0 ? 'Agotado' : product.stock + ' disponibles' }}</span></div>
+          <h3>{{ product.name }}</h3><p>{{ product.description }}</p>
+          <div class="product-bottom"><strong>{{ product.price | currency:'BOB':'Bs ' }}</strong></div>
+          <div class="product-actions"><button type="button" class="button secondary" [disabled]="product.stock === 0" (click)="add(product)">Añadir al carrito</button><button type="button" class="button primary" [disabled]="product.stock === 0" (click)="buyNow(product)">Comprar ahora</button></div>
+        </div>
+      </article>
+    </ng-template>
+    <app-collection [items]="visibleProducts()" [itemTemplate]="productCard" emptyTitle="No hay piezas para mostrar" emptyDescription="Prueba otra búsqueda o categoría." />
+  }
+</section>
+
+@if (selectedProduct(); as product) {
+  <div class="product-dialog-layer"><button type="button" class="product-dialog-backdrop" aria-label="Cerrar detalles" (click)="selectedProduct.set(null)"></button>
+    <section class="product-dialog" role="dialog" aria-modal="true" [attr.aria-label]="product.name">
+      <button type="button" class="product-dialog-close" aria-label="Cerrar detalles" (click)="selectedProduct.set(null)">×</button>
+      <div class="product-dialog-image"><app-product-gallery [product]="product" [large]="true" /></div>
+      <div class="product-dialog-copy"><p class="eyebrow">{{ product.category }} · BELILO</p><h2>{{ product.name }}</h2><p>{{ product.description }}</p><strong class="dialog-price">{{ product.price | currency:'BOB':'Bs ' }}</strong><span class="availability" [class.sold-out]="product.stock === 0">{{ product.stock === 0 ? 'Agotado' : product.stock + ' piezas disponibles' }}</span>
+        <div class="product-actions"><button type="button" class="button secondary" [disabled]="product.stock === 0" (click)="add(product)">Añadir al carrito</button><button type="button" class="button primary" [disabled]="product.stock === 0" (click)="buyNow(product)">Comprar ahora</button></div>
+      </div>
+    </section>
+  </div>
+}

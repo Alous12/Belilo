@@ -1,0 +1,42 @@
+/* Paleta global de BELILO. Cambia estos valores para probar otro diseño. */
+:root {
+  color-scheme: dark;
+
+  /* Fondos y superficies */
+  --color-page: #0d1426;
+  --color-header: #121d34;
+  --color-surface: #19253d;
+  --color-surface-alt: #22324e;
+  --color-surface-hover: #304461;
+  --color-field: #111c31;
+  --color-shadow: #030816;
+
+  /* Texto y marca */
+  --color-text: #faf4f8;
+  --color-price: #ffffff;
+  --color-text-soft: #d7deeb;
+  --color-text-muted: #acbad0;
+  --color-text-subtle: #8c9cb5;
+  --color-accent: #b67697;
+  --color-accent-hover: #e5acc9;
+  --color-accent-light: #f8ddea;
+  --color-accent-ink: #172238;
+
+  /* Bordes, estados y marcas externas */
+  --color-border: #c18caa;
+  --color-success: #46ad83;
+  --color-success-bg: #1a493f;
+  --color-success-text: #c0efda;
+  --color-danger: #e28b98;
+  --color-danger-bg: #552f3d;
+  --color-danger-text: #ffdadb;
+  --color-warning-bg: #5e405e;
+  --color-warning-text: #f7d7eb;
+  --color-whatsapp: #19835c;
+  --color-whatsapp-hover: #259b70;
+
+  /* Detalles decorativos del inicio */
+  --color-gem-light: #e4eaff;
+  --color-gem-mid: #91aed9;
+  --color-gem-dark: #526fa1;
+}
