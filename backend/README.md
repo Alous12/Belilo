@@ -49,7 +49,7 @@ Los precios ahora se muestran en **Bs** y conservan sus valores numéricos anter
 
 ## Publicar en Netlify sin Firebase Storage
 
-El archivo [`../netlify.toml`](../netlify.toml) compila Angular, empaqueta la API Express en una Netlify Function y envía `/api/*` a esa función. En Netlify, la API conserva productos, pedidos y entregas en Firestore, y guarda las fotos en **Netlify Blobs**, una colección del sitio que persiste entre despliegues. Así, el administrador puede añadir fotos y los clientes pueden verlas desde la misma URL del catálogo. El desarrollo local sigue usando `backend/data/images`.
+El archivo [`../netlify.toml`](../netlify.toml) compila Angular y empaqueta la API Express en una Netlify Function moderna, configurada para responder en `/api/*`. En Netlify, la API conserva productos, pedidos y entregas en Firestore, y guarda las fotos en **Netlify Blobs**, una colección del sitio que persiste entre despliegues. Así, el administrador puede añadir fotos y los clientes pueden verlas desde la misma URL del catálogo. El desarrollo local sigue usando `backend/data/images`.
 
 1. Conecta en Netlify el repositorio cuya raíz contiene `frontend/`, `backend/` y `netlify.toml`. Deja **Base directory** vacío para usar la raíz del repositorio; subir únicamente `frontend/dist` no incluirá la API ni Blobs. El comando de compilación y el directorio publicado ya están en `netlify.toml`.
 2. En la configuración del sitio de Netlify, añade estas variables de entorno. Marca la contraseña y el JSON como secretos y **no los escribas en `netlify.toml` ni en Git**:
