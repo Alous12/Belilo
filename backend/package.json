@@ -1,0 +1,23 @@
+{
+  "name": "belilo-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env src/server.js",
+    "dev": "node --env-file-if-exists=.env --watch src/server.js",
+    "firebase:check": "node --env-file-if-exists=.env scripts/firebase-check.js",
+    "firebase:import": "node --env-file-if-exists=.env scripts/firebase-import.js",
+    "netlify:images:import": "node --env-file-if-exists=.env scripts/netlify-images-import.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^11.1.0",
+    "express": "^5.1.0",
+    "firebase-admin": "^14.4.0",
+    "serverless-http": "^4.0.0"
+  }
+}

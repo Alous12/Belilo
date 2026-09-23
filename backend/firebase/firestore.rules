@@ -1,0 +1,9 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Angular talks to the BELILO API. Only the backend Admin SDK accesses Firestore.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
