@@ -9,6 +9,8 @@ Aplicación Angular 21 organizada por funciones. La compra se completa en el car
 
 El botón **Mi bolsa** abre el carrito a la derecha desde cualquier página. **Añadir al carrito** abre el paso para revisar piezas y cantidades; **Comprar ahora** añade la pieza y abre directamente el paso de datos y entrega. Para envíos a otra ciudad se solicita el número de carnet de identidad. Después de registrar el pedido, el comprador recibe un enlace de WhatsApp con el mensaje preparado para cada asesor configurado. Debe tocar el enlace y enviarlo en WhatsApp; abrir el enlace no envía el mensaje automáticamente. El sitio limita la reapertura del enlace durante un minuto y el backend limita los pedidos repetidos.
 
+Mientras Inicio está visible, el catálogo se consulta de nuevo cada 15 segundos y también al volver a la pestaña o a la página. Un producto eliminado desaparece igualmente del carrito y de los detalles abiertos. Las respuestas de `/api/products` no se guardan en caché.
+
 ## Colores del sitio
 
 La paleta completa se edita en `src/theme.css`. Cambia las variables de `:root` para probar otros colores en inicio, catálogo, carrito, compra y administración al mismo tiempo. `--color-page`, `--color-surface` y `--color-field` controlan los fondos; `--color-text` y sus variantes controlan la tipografía; `--color-accent` y `--color-accent-hover` controlan los elementos destacados. Los bordes transparentes se derivan de `--color-border` con `color-mix`, por lo que siguen la paleta automáticamente. Los estados de éxito, error y pedido pendiente tienen variables propias para conservar su significado.

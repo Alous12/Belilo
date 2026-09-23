@@ -154,7 +154,10 @@ export function createApp({
     image.stream().on('error', next).pipe(res);
   });
 
-  app.get('/api/products', async (_req, res) => res.json(await store.listProducts()));
+  app.get('/api/products', async (_req, res) => {
+    res.set('Cache-Control', 'no-store');
+    return res.json(await store.listProducts());
+  });
   app.post('/api/products', requireAdmin, async (req, res) => {
     const input = parseProduct(req.body);
     if (!input) return failure(res, 400, 'INVALID_PRODUCT', 'Los datos del producto no son válidos.');

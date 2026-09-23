@@ -8,10 +8,11 @@ import { CatalogService } from '../../core/catalog.service';
 import { CartItem, DeliverySettings, DeliveryType, Order, OrderInput, primaryImage } from '../../core/models';
 import { whatsappLinks } from '../../core/whatsapp';
 import { CartDrawerService } from '../../core/cart-drawer.service';
+import { ArrowIcon } from '../../shared/arrow-icon';
 
 @Component({
   selector: 'app-checkout',
-  imports: [CurrencyPipe, FormsModule],
+  imports: [ArrowIcon, CurrencyPipe, FormsModule],
   templateUrl: './checkout.html',
 })
 export class Checkout implements OnInit {

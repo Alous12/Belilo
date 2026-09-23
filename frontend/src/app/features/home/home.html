@@ -3,7 +3,7 @@
     <p class="eyebrow">exclusividad y variedad</p>
     <h1>Colección BELILO</h1>
     <p>Accesorios artesanales, perlitas, piedras naturales y dijes que acompañan tus momentos especiales. Encuentra esa pieza que se siente tuya.</p>
-    <button type="button" class="button primary" (click)="scrollToCatalog()">Descubrir la colección <span aria-hidden="true">↗</span></button>
+    <button type="button" class="button primary" (click)="scrollToCatalog()">Descubrir la colección <app-arrow-icon direction="up-right" /></button>
     <span class="hero-note">✦ &nbsp; Hechas para acompañarte <3 </span>
   </div>
   <div class="hero-art" aria-hidden="true">
@@ -16,12 +16,12 @@
   <div class="section-heading"><div><h2>Explora la colección</h2></div><span class="muted">{{ visibleProducts().length }} piezas para descubrir</span></div>
   <div class="filters">
     <div class="chips" aria-label="Categorías">
-      @for (item of categories(); track item) { <button type="button" class="chip" [class.selected]="category() === item" (click)="category.set(item)">{{ item }}</button> }
+      @for (item of categories(); track item) { <button type="button" class="chip" [class.selected]="activeCategory() === item" (click)="category.set(item)">{{ item }}</button> }
     </div>
     <label class="search"><span class="sr-only">Buscar productos</span><input type="search" placeholder="Buscar una pieza especial..." [value]="query()" (input)="search($event)"></label>
   </div>
 
-  @if (notice()) { <p class="success catalog-notice" role="status">{{ notice() }} <button type="button" class="text-button" (click)="drawer.open()">Abrir mi bolsa →</button></p> }
+  @if (notice()) { <p class="success catalog-notice" role="status">{{ notice() }} <button type="button" class="text-button" (click)="drawer.open()">Abrir mi bolsa <app-arrow-icon /></button></p> }
   @if (catalog.loading()) { <div class="empty-state" role="status">Cargando catálogo...</div> }
   @else if (catalog.error()) { <div class="empty-state" role="alert"><strong>{{ catalog.error() }}</strong><button class="button secondary" type="button" (click)="catalog.load(true)">Reintentar</button></div> }
   @else {
@@ -39,7 +39,7 @@
   }
 </section>
 
-@if (selectedProduct(); as product) {
+@if (currentProduct(); as product) {
   <div class="product-dialog-layer"><button type="button" class="product-dialog-backdrop" aria-label="Cerrar detalles" (click)="selectedProduct.set(null)"></button>
     <section class="product-dialog" role="dialog" aria-modal="true" [attr.aria-label]="product.name">
       <button type="button" class="product-dialog-close" aria-label="Cerrar detalles" (click)="selectedProduct.set(null)">×</button>

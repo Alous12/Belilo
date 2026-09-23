@@ -6,7 +6,7 @@
       <p>Tu pedido <strong>#{{ confirmed.id }}</strong> ya aparece en nuestro panel. Total confirmado: <strong class="price">{{ confirmed.total | currency:'BOB':'Bs ' }}</strong>.</p>
       @if (links().length) {
         <div class="whatsapp-options"><p>Para enviar los detalles y coordinar la entrega, toca el enlace del asesor:</p>
-          @for (link of links(); track link.href) { <a class="button whatsapp-button full" [href]="link.href" target="_blank" rel="noopener noreferrer" (click)="openWhatsapp($event)">Enviar pedido por WhatsApp · {{ link.label }} ↗</a> }
+          @for (link of links(); track link.href) { <a class="button whatsapp-button full" [href]="link.href" target="_blank" rel="noopener noreferrer" (click)="openWhatsapp($event)">Enviar pedido por WhatsApp · {{ link.label }} <app-arrow-icon direction="up-right" /></a> }
           @if (whatsappNotice()) { <p class="field-hint" role="status">{{ whatsappNotice() }}</p> }
         </div>
       } @else { <p>Tu pedido quedó registrado. La tienda se pondrá en contacto contigo para coordinar la entrega.</p> }
@@ -28,9 +28,9 @@
               </article>
             }
           </div>
-          <div class="purchase-submit selection-submit"><div><span>Total de productos</span><strong>{{ cart.total() | currency:'BOB':'Bs ' }}</strong></div><button type="button" class="button primary full" (click)="drawer.showDetails()">Continuar con mis datos →</button></div>
+          <div class="purchase-submit selection-submit"><div><span>Total de productos</span><strong>{{ cart.total() | currency:'BOB':'Bs ' }}</strong></div><button type="button" class="button primary full" (click)="drawer.showDetails()">Continuar con mis datos <app-arrow-icon /></button></div>
         } @else {
-          <button type="button" class="quiet-link purchase-back" (click)="drawer.showSelection()">← Volver a mis piezas</button>
+          <button type="button" class="quiet-link purchase-back" (click)="drawer.showSelection()"><app-arrow-icon direction="left" /> Volver a mis piezas</button>
           <div class="purchase-section-title"><span class="step-number">02</span><div><p class="eyebrow">Tus datos y entrega</p><h2>Completa tu pedido</h2></div></div>
           <p class="purchase-summary">{{ cart.count() }} {{ cart.count() === 1 ? 'pieza' : 'piezas' }} · Total {{ cart.total() | currency:'BOB':'Bs ' }}</p>
           <form (ngSubmit)="submit()" #checkoutForm="ngForm" class="purchase-form">
@@ -40,7 +40,7 @@
             <div class="purchase-subheading"><p class="eyebrow">Coordinemos la entrega</p><h3>¿Cómo quieres recibirlo?</h3></div>
             @if (loading()) { <p class="muted" role="status">Cargando ubicaciones y horarios...</p> }
             @else if (settings(); as delivery) {
-              <div class="delivery-mode-grid" aria-label="Tipo de entrega"><button type="button" class="delivery-mode" [class.selected]="deliveryType === 'ciudad'" [attr.aria-pressed]="deliveryType === 'ciudad'" (click)="deliveryType = 'ciudad'"><strong>⌖ Entregas en Cochabamba</strong><small>Elige un punto y horario disponible.</small></button><button type="button" class="delivery-mode" [class.selected]="deliveryType === 'otra_ciudad'" [attr.aria-pressed]="deliveryType === 'otra_ciudad'" (click)="deliveryType = 'otra_ciudad'"><strong>↗ Envío a otra ciudad</strong><small>Indica tu departamento y dirección.</small></button></div>
+              <div class="delivery-mode-grid" aria-label="Tipo de entrega"><button type="button" class="delivery-mode" [class.selected]="deliveryType === 'ciudad'" [attr.aria-pressed]="deliveryType === 'ciudad'" (click)="deliveryType = 'ciudad'"><strong>⌖ Entregas en Cochabamba</strong><small>Elige un punto y horario disponible.</small></button><button type="button" class="delivery-mode" [class.selected]="deliveryType === 'otra_ciudad'" [attr.aria-pressed]="deliveryType === 'otra_ciudad'" (click)="deliveryType = 'otra_ciudad'"><strong><app-arrow-icon direction="up-right" /> Envío a otra ciudad</strong><small>Indica tu departamento y dirección.</small></button></div>
               @if (deliveryType === 'ciudad') {
                 <p class="field-hint">Selecciona el punto que te quede más cómodo.</p>
                 <div class="delivery-choices">@for (place of delivery.zones; track place.id) {

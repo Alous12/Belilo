@@ -40,6 +40,8 @@ async function request(path, { method = 'GET', body, admin = false } = {}) {
 }
 
 test('catálogo, entregas y pedidos cumplen el contrato del frontend', async () => {
+  const catalogResponse = await fetch(`${base}/products`);
+  assert.equal(catalogResponse.headers.get('cache-control'), 'no-store');
   const catalog = await request('/products');
   assert.equal(catalog.status, 200);
   assert.ok(Array.isArray(catalog.body));

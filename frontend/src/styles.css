@@ -37,6 +37,8 @@ h3 { font-size: 17px; line-height: 1.35; }
 .hero-spark { position: absolute; top: 16%; left: 23%; color: var(--color-accent-light); font-size: 40px; }
 .hero-caption { position: absolute; right: 35px; bottom: 30px; color: var(--color-accent); font-family: 'Cinzel', serif; font-size: 13px; line-height: 1.6; letter-spacing: .2em; text-align: right; }
 .button { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 44px; padding: 12px 22px; border: 1px solid color-mix(in srgb, var(--color-border) 38%, transparent); border-radius: 999px; font-size: 12px; font-weight: 800; text-align: center; transition: .2s; }
+app-arrow-icon { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 1em; height: 1em; vertical-align: -.12em; }
+app-arrow-icon svg { display: block; width: 100%; height: 100%; }
 .button:hover { transform: translateY(-2px); }
 .button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 .button.primary { border-color: var(--color-accent); background: var(--color-accent); color: var(--color-accent-ink); }
@@ -323,6 +325,7 @@ label input, label select, label textarea { display: block; margin-top: 7px; }
 .gallery-arrow.previous { left: 10px; }
 .gallery-arrow.next { right: 10px; }
 .gallery-arrow:hover { background: var(--color-surface-hover); }
+.gallery-arrow app-arrow-icon { font-size: 19px; }
 .gallery-dots { position: absolute; bottom: 12px; left: 50%; display: flex; gap: 7px; transform: translateX(-50%); border-radius: 999px; padding: 7px 10px; background: color-mix(in srgb, var(--color-page) 73%, transparent); }
 .gallery-dot { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 50%; background: color-mix(in srgb, var(--color-accent-hover) 53%, transparent); }
 .gallery-dot.active { width: 19px; border-radius: 8px; background: var(--color-accent-hover); }
@@ -341,7 +344,7 @@ label input, label select, label textarea { display: block; margin-top: 7px; }
 .delivery-mode-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }
 .delivery-mode { display: grid; gap: 7px; min-height: 87px; border: 1px solid color-mix(in srgb, var(--color-accent) 38%, transparent); border-radius: 13px; padding: 14px; background: var(--color-surface); color: var(--color-text); text-align: left; }
 .delivery-mode.selected { border-color: var(--color-accent-hover); background: var(--color-surface-alt); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-accent-hover) 38%, transparent); }
-.delivery-mode strong { font-size: 13px; }
+.delivery-mode strong { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; }
 .delivery-mode small { color: var(--color-text-muted); font-size: 11px; line-height: 1.4; }
 .shipping-fields { display: grid; gap: 14px; margin-bottom: 22px; }
 .shipping-fields .field-hint { margin: 0; }
