@@ -218,12 +218,19 @@ test('sube varias imágenes de producto y valida envíos a otros departamentos',
   const shipping = await request('/orders', { method: 'POST', body: {
     clientName: 'Cliente de prueba', clientPhone: '70000000',
     deliveryType: 'otra_ciudad', deliveryLocation: 'Cochabamba', deliveryDepartment: 'Cochabamba',
-    deliveryAddress: 'Cochabamba, Av. América 123', deliveryTime: 'A coordinar con asesor',
+    deliveryAddress: 'Cochabamba, Av. América 123', clientDocumentNumber: '12345678-1A', deliveryTime: 'A coordinar con asesor',
     items: [{ productId: product.body.id, quantity: 1 }],
   } });
   assert.equal(shipping.status, 201);
   assert.equal(shipping.body.deliveryDepartment, 'Cochabamba');
   assert.equal(shipping.body.deliveryAddress, 'Cochabamba, Av. América 123');
+  assert.equal(shipping.body.clientDocumentNumber, '12345678-1A');
+  assert.equal((await request('/orders', { method: 'POST', body: {
+    clientName: 'Cliente de prueba', clientPhone: '70000000',
+    deliveryType: 'otra_ciudad', deliveryLocation: 'Cochabamba', deliveryDepartment: 'Cochabamba',
+    deliveryAddress: 'Cochabamba, Av. América 123', deliveryTime: 'A coordinar con asesor',
+    items: [{ productId: product.body.id, quantity: 1 }],
+  } })).status, 400);
   assert.equal((await request('/orders', { method: 'POST', body: {
     clientName: 'Cliente de prueba', clientPhone: '70000000',
     deliveryType: 'otra_ciudad', deliveryLocation: 'Departamento inventado',

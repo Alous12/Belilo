@@ -12,7 +12,7 @@ export function whatsappLinks(order: Order, phones: string[], cartSnapshot: Cart
     `*BELILO · Pedido #${order.id}*`,
     `Cliente: ${order.clientName}`,
     `Teléfono: ${order.clientPhone}`,
-    `Entrega: ${order.deliveryType === 'otra_ciudad' ? 'Envío a otra ciudad' : 'En la ciudad'}`,
+    `Entrega: ${order.deliveryType === 'otra_ciudad' ? 'Envío a otra ciudad' : 'En Cochabamba'}`,
     `${order.deliveryType === 'otra_ciudad' ? 'Departamento' : 'Punto de entrega'}: ${order.deliveryLocation}`,
     ...(order.deliveryAddress ? [`Ciudad y dirección: ${order.deliveryAddress}`] : []),
     `Horario: ${order.deliveryTime}`,

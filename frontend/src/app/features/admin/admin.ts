@@ -33,8 +33,11 @@ export class Admin implements OnInit, OnDestroy {
   readonly inventoryProducts = computed(() => this.catalog.products().filter(item => this.inventoryCategory() === 'Todas' || item.category === this.inventoryCategory()));
   readonly tab = signal<'products' | 'orders' | 'delivery'>('products');
   readonly orders = signal<Order[]>([]);
+  readonly selectedOrderStatus = signal<OrderStatus>('pendiente');
+  readonly visibleOrders = computed(() => this.orders().filter(order => order.status === this.selectedOrderStatus()));
   readonly pendingCount = computed(() => this.orders().filter(order => order.status === 'pendiente').length);
   readonly deliveredCount = computed(() => this.orders().filter(order => order.status === 'entregado').length);
+  readonly undeliveredCount = computed(() => this.orders().filter(order => order.status === 'no_entregado').length);
   readonly updatingOrderId = signal<Order['id'] | null>(null);
   readonly settings = signal<DeliverySettings | null>(null);
   readonly ordersLoading = signal(false);

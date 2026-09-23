@@ -17,42 +17,53 @@
   } @else {
     <div class="purchase-layout">
       <div class="purchase-main">
-        <div class="purchase-section-title"><span class="step-number">01</span><div><p class="eyebrow">Tu selección</p><h2>Revisa tus piezas</h2></div></div>
-        <div class="purchase-items">
-          @for (item of cart.items(); track item.product.id) {
-            <article class="purchase-item">
-              <div class="purchase-thumb">@if (primaryImage(item.product)) { <img [src]="primaryImage(item.product)" [alt]="item.product.name"> } @else { ✦ }</div>
-              <div class="purchase-item-copy"><span class="eyebrow">{{ item.product.category }}</span><h3>{{ item.product.name }}</h3><strong>{{ item.product.price * item.quantity | currency:'BOB':'Bs ' }}</strong><div class="quantity-controls" [attr.aria-label]="'Cantidad de ' + item.product.name"><button type="button" (click)="cart.setQuantity(item.product.id, item.quantity - 1)" aria-label="Reducir cantidad">−</button><span>{{ item.quantity }}</span><button type="button" [disabled]="item.quantity >= item.product.stock" (click)="cart.setQuantity(item.product.id, item.quantity + 1)" aria-label="Aumentar cantidad">+</button></div></div>
-              <button type="button" class="remove-item" [attr.aria-label]="'Quitar ' + item.product.name" (click)="cart.remove(item.product.id)">×</button>
-            </article>
-          }
-        </div>
-
-        <form (ngSubmit)="submit()" #checkoutForm="ngForm" class="purchase-form">
-          <div class="purchase-section-title"><span class="step-number">02</span><div><p class="eyebrow">Para contactarte</p><h2>Tus datos</h2></div></div>
-          <div class="form-grid"><label>Nombre completo<input name="name" type="text" autocomplete="name" required [(ngModel)]="name" placeholder="¿Cómo te llamas?"></label><label>Teléfono de contacto<input name="phone" type="tel" autocomplete="tel" required minlength="7" [(ngModel)]="phone" placeholder="Ej. 70000000"></label></div>
-
-          <div class="purchase-section-title"><span class="step-number">03</span><div><p class="eyebrow">Coordinemos la entrega</p><h2>¿Cómo quieres recibirlo?</h2></div></div>
-          @if (loading()) { <p class="muted" role="status">Cargando ubicaciones y horarios...</p> }
-          @else if (settings(); as delivery) {
-            <div class="delivery-mode-grid" aria-label="Tipo de entrega"><button type="button" class="delivery-mode" [class.selected]="deliveryType === 'ciudad'" [attr.aria-pressed]="deliveryType === 'ciudad'" (click)="deliveryType = 'ciudad'"><strong>⌖ Entrega en la ciudad</strong><small>Elige un punto y horario disponible.</small></button><button type="button" class="delivery-mode" [class.selected]="deliveryType === 'otra_ciudad'" [attr.aria-pressed]="deliveryType === 'otra_ciudad'" (click)="deliveryType = 'otra_ciudad'"><strong>↗ Envío a otra ciudad</strong><small>Indica tu departamento y dirección.</small></button></div>
-            @if (deliveryType === 'ciudad') {
-              <p class="field-hint">Selecciona el punto que te quede más cómodo.</p>
-              <div class="delivery-choices">@for (place of delivery.zones; track place.id) {
-                <button type="button" class="delivery-choice" [class.selected]="zone === place.name" [attr.aria-pressed]="zone === place.name" (click)="zone = place.name">
-                  @if (place.image) { <img [src]="place.image" [alt]="place.name"> } @else { <span class="delivery-choice-icon" aria-hidden="true">⌖</span> }
-                  <span>{{ place.name }}</span><span class="delivery-choice-check" aria-hidden="true">✓</span>
-                </button>
-              }</div>
-              <label class="time-field">Horario preferido<select name="time" required [(ngModel)]="time">@for (slot of delivery.times; track slot) { <option [value]="slot">{{ slot }}</option> }</select></label>
-            } @else {
-              <div class="shipping-fields"><label>Departamento<select name="department" required [(ngModel)]="department"><option value="" disabled>Selecciona un departamento</option>@for (place of delivery.departments; track place) { <option [value]="place">{{ place }}</option> }</select></label><label>Ciudad y dirección de entrega<input name="address" required maxlength="200" [(ngModel)]="address" placeholder="Ej. Cochabamba, Av. América 123"></label><p class="field-hint">El asesor confirmará contigo el costo y el plazo del envío antes de despacharlo.</p></div>
+        @if (drawer.step() === 'selection') {
+          <div class="purchase-section-title"><span class="step-number">01</span><div><p class="eyebrow">Reserva tus piezas</p><h2>Revisa tu selección</h2></div></div>
+          <div class="purchase-items">
+            @for (item of cart.items(); track item.product.id) {
+              <article class="purchase-item">
+                <div class="purchase-thumb">@if (primaryImage(item.product)) { <img [src]="primaryImage(item.product)" [alt]="item.product.name"> } @else { ✦ }</div>
+                <div class="purchase-item-copy"><span class="eyebrow">{{ item.product.category }}</span><h3>{{ item.product.name }}</h3><strong>{{ item.product.price * item.quantity | currency:'BOB':'Bs ' }}</strong><div class="quantity-controls" [attr.aria-label]="'Cantidad de ' + item.product.name"><button type="button" (click)="cart.setQuantity(item.product.id, item.quantity - 1)" aria-label="Reducir cantidad">−</button><span>{{ item.quantity }}</span><button type="button" [disabled]="item.quantity >= item.product.stock" (click)="cart.setQuantity(item.product.id, item.quantity + 1)" aria-label="Aumentar cantidad">+</button></div></div>
+                <button type="button" class="remove-item" [attr.aria-label]="'Quitar ' + item.product.name" (click)="cart.remove(item.product.id)">×</button>
+              </article>
             }
-          }
+          </div>
+          <div class="purchase-submit selection-submit"><div><span>Total de productos</span><strong>{{ cart.total() | currency:'BOB':'Bs ' }}</strong></div><button type="button" class="button primary full" (click)="drawer.showDetails()">Continuar con mis datos →</button></div>
+        } @else {
+          <button type="button" class="quiet-link purchase-back" (click)="drawer.showSelection()">← Volver a mis piezas</button>
+          <div class="purchase-section-title"><span class="step-number">02</span><div><p class="eyebrow">Tus datos y entrega</p><h2>Completa tu pedido</h2></div></div>
+          <p class="purchase-summary">{{ cart.count() }} {{ cart.count() === 1 ? 'pieza' : 'piezas' }} · Total {{ cart.total() | currency:'BOB':'Bs ' }}</p>
+          <form (ngSubmit)="submit()" #checkoutForm="ngForm" class="purchase-form">
+            <div class="purchase-subheading"><p class="eyebrow">Para contactarte</p><h3>Tus datos</h3></div>
+            <div class="form-grid"><label>Nombre completo<input name="name" type="text" autocomplete="name" required [(ngModel)]="name" placeholder="¿Cómo te llamas?"></label><label>Teléfono de contacto<input name="phone" type="tel" autocomplete="tel" required minlength="7" [(ngModel)]="phone" placeholder="Ej. 70000000"></label></div>
 
-          @if (error()) { <p class="error" role="alert">{{ error() }} @if (!settings()) { <button type="button" class="text-button" (click)="loadSettings()">Reintentar</button> }</p> }
-          <div class="purchase-submit"><div><span>Total de productos</span><strong>{{ cart.total() | currency:'BOB':'Bs ' }}</strong></div><button type="submit" class="button primary full" [disabled]="checkoutForm.invalid || !settings() || !deliveryValid() || submitting()">{{ submitting() ? 'Registrando pedido...' : 'Confirmar pedido' }}</button><small>@if (deliveryType === 'otra_ciudad') { El envío se cotizará por separado. } Después podrás enviar los detalles por WhatsApp al asesor.</small></div>
-        </form>
+            <div class="purchase-subheading"><p class="eyebrow">Coordinemos la entrega</p><h3>¿Cómo quieres recibirlo?</h3></div>
+            @if (loading()) { <p class="muted" role="status">Cargando ubicaciones y horarios...</p> }
+            @else if (settings(); as delivery) {
+              <div class="delivery-mode-grid" aria-label="Tipo de entrega"><button type="button" class="delivery-mode" [class.selected]="deliveryType === 'ciudad'" [attr.aria-pressed]="deliveryType === 'ciudad'" (click)="deliveryType = 'ciudad'"><strong>⌖ Entregas en Cochabamba</strong><small>Elige un punto y horario disponible.</small></button><button type="button" class="delivery-mode" [class.selected]="deliveryType === 'otra_ciudad'" [attr.aria-pressed]="deliveryType === 'otra_ciudad'" (click)="deliveryType = 'otra_ciudad'"><strong>↗ Envío a otra ciudad</strong><small>Indica tu departamento y dirección.</small></button></div>
+              @if (deliveryType === 'ciudad') {
+                <p class="field-hint">Selecciona el punto que te quede más cómodo.</p>
+                <div class="delivery-choices">@for (place of delivery.zones; track place.id) {
+                  <button type="button" class="delivery-choice" [class.selected]="zone === place.name" [attr.aria-pressed]="zone === place.name" (click)="zone = place.name">
+                    @if (place.image) { <img [src]="place.image" [alt]="place.name"> } @else { <span class="delivery-choice-icon" aria-hidden="true">⌖</span> }
+                    <span>{{ place.name }}</span><span class="delivery-choice-check" aria-hidden="true">✓</span>
+                  </button>
+                }</div>
+                <label class="time-field">Horario preferido<select name="time" required [(ngModel)]="time">@for (slot of delivery.times; track slot) { <option [value]="slot">{{ slot }}</option> }</select></label>
+              } @else {
+                <div class="shipping-fields">
+                  <label>Departamento<select name="department" required [(ngModel)]="department"><option value="" disabled>Selecciona un departamento</option>@for (place of delivery.departments; track place) { <option [value]="place">{{ place }}</option> }</select></label>
+                  <label>Ciudad y dirección de entrega<input name="address" required maxlength="200" [(ngModel)]="address" placeholder="Ej. Santa Cruz, Av. Principal 123"></label>
+                  <label>Número de carnet de identidad<input name="clientDocumentNumber" type="text" required minlength="4" maxlength="25" pattern="[A-Za-z0-9 -]{4,25}" [(ngModel)]="clientDocumentNumber" placeholder="Ej. 12345678"><small class="field-hint">Sin puntos; puedes incluir guion y extensión. Necesario para coordinar el envío.</small></label>
+                  <p class="field-hint">El asesor confirmará contigo el costo y el plazo del envío antes de despacharlo.</p>
+                </div>
+              }
+            }
+
+            @if (error()) { <p class="error" role="alert">{{ error() }} @if (!settings()) { <button type="button" class="text-button" (click)="loadSettings()">Reintentar</button> }</p> }
+            <div class="purchase-submit"><div><span>Total de productos</span><strong>{{ cart.total() | currency:'BOB':'Bs ' }}</strong></div><button type="submit" class="button primary full" [disabled]="checkoutForm.invalid || !settings() || !deliveryValid() || submitting()">{{ submitting() ? 'Registrando pedido...' : 'Confirmar pedido' }}</button><small>@if (deliveryType === 'otra_ciudad') { El envío se cotizará por separado. } Después podrás enviar los detalles por WhatsApp al asesor.</small></div>
+          </form>
+        }
       </div>
       @if (!compact()) { <aside class="purchase-side"><p class="eyebrow">Compra con tranquilidad</p><h2>Hecho para ti</h2><p>Cada pieza BELILO es elegida con cuidado. Tu pedido se registra primero y nuestro equipo confirma contigo los detalles de entrega.</p><div class="side-feature">✦ <span>Selección artesanal</span></div><div class="side-feature">⌖ <span>Entrega a tu elección</span></div><div class="side-feature">♡ <span>Atención personal por WhatsApp</span></div></aside> }
     </div>

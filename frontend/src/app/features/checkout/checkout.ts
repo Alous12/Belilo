@@ -39,9 +39,12 @@ export class Checkout implements OnInit {
   deliveryType: DeliveryType = 'ciudad';
   department = '';
   address = '';
+  clientDocumentNumber = '';
 
   deliveryValid(): boolean {
-    return this.deliveryType === 'ciudad' ? !!this.zone && !!this.time : !!this.department && !!this.address.trim();
+    return this.deliveryType === 'ciudad'
+      ? !!this.zone && !!this.time
+      : !!this.department && !!this.address.trim() && /^[A-Za-z0-9 -]{4,25}$/.test(this.clientDocumentNumber.trim());
   }
 
   ngOnInit(): void {
@@ -72,7 +75,7 @@ export class Checkout implements OnInit {
       deliveryType: this.deliveryType,
       deliveryLocation: this.deliveryType === 'ciudad' ? this.zone : this.department,
       deliveryTime: this.deliveryType === 'ciudad' ? this.time : 'A coordinar con asesor',
-      ...(this.deliveryType === 'otra_ciudad' ? { deliveryDepartment: this.department, deliveryAddress: this.address.trim() } : {}),
+      ...(this.deliveryType === 'otra_ciudad' ? { deliveryDepartment: this.department, deliveryAddress: this.address.trim(), clientDocumentNumber: this.clientDocumentNumber.trim() } : {}),
       items: this.cart.items().map(item => ({ productId: item.product.id, quantity: item.quantity })),
     };
     this.submitting.set(true);

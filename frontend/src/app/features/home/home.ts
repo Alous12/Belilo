@@ -31,17 +31,21 @@ export class Home implements OnInit {
 
   ngOnInit(): void { this.catalog.load(); }
   search(event: Event): void { this.query.set((event.target as HTMLInputElement).value); }
-  add(product: Product): void {
+  add(product: Product, buyNow = false): void {
     if (product.stock <= 0) return;
     const count = this.cart.count();
     this.cart.add(product);
     if (this.cart.count() === count) {
       this.notice.set('Ya añadiste todas las unidades disponibles de esta pieza.');
+      if (buyNow && this.cart.items().some(item => item.product.id === product.id)) {
+        this.selectedProduct.set(null);
+        this.drawer.open('details');
+      }
       return;
     }
     this.notice.set(`${product.name} se añadió al carrito.`);
     this.selectedProduct.set(null);
-    this.drawer.open();
+    this.drawer.open(buyNow ? 'details' : 'selection');
   }
 
   scrollToCatalog(): void {

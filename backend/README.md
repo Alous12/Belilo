@@ -75,7 +75,7 @@ Netlify Free incluye Functions y Blobs con un límite mensual de créditos; al a
 
 Si en otro alojamiento necesitas Firebase Storage, crea un bucket y configura `BELILO_IMAGE_STORE=firebase` y, si el nombre no es `belilo.firebasestorage.app`, `BELILO_STORAGE_BUCKET=nombre-del-bucket`; Firebase Storage requiere Blaze.
 
-La compra permite **entrega en la ciudad** mediante los puntos y horarios configurados, o **envío a otra ciudad** con departamento y dirección. El costo de envío se coordina con el asesor y no se suma al total de los productos. Los pedidos antiguos sin tipo de entrega se muestran como entregas en la ciudad.
+La compra permite **entregas en Cochabamba** mediante los puntos y horarios configurados, o **envío a otra ciudad** con departamento, dirección y número de carnet de identidad obligatorio. El carnet se guarda en el pedido y se muestra al administrador; no se añade al enlace de WhatsApp. El costo de envío se coordina con el asesor y no se suma al total de los productos. Los pedidos antiguos sin tipo de entrega se muestran como entregas en Cochabamba.
 
 Las rutas públicas son `GET /api/products`, `GET /api/delivery-settings` y `POST /api/orders`. Las operaciones de catálogo, los ajustes, `GET /api/orders` y `PATCH /api/orders/:id/status` requieren `Authorization: Bearer <BELILO_ADMIN_TOKEN>`.
 

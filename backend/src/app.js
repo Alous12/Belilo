@@ -67,13 +67,16 @@ function parseOrder(body, state) {
   const deliveryType = body.deliveryType ?? 'ciudad';
   const deliveryDepartment = deliveryType === 'otra_ciudad' ? textField(body.deliveryDepartment, 60) : undefined;
   const deliveryAddress = deliveryType === 'otra_ciudad' ? textField(body.deliveryAddress, 200) : undefined;
+  const clientDocumentNumber = deliveryType === 'otra_ciudad' ? textField(body.clientDocumentNumber, 25) : undefined;
   if (clientName === null || clientPhone === null || !/^[+\d ()-]{7,30}$/.test(clientPhone) ||
       deliveryLocation === null || deliveryTime === null ||
       !['ciudad', 'otra_ciudad'].includes(deliveryType) ||
       (deliveryType === 'ciudad' && (!state.deliverySettings.zones.some(zone => zone.name === deliveryLocation) ||
         !state.deliverySettings.times.includes(deliveryTime))) ||
       (deliveryType === 'otra_ciudad' && (!DEPARTMENTS.includes(deliveryDepartment) ||
-        deliveryAddress === null || deliveryLocation !== deliveryDepartment || deliveryTime !== 'A coordinar con asesor')) ||
+        deliveryAddress === null || clientDocumentNumber === null ||
+        !/^[A-Za-z0-9 -]{4,25}$/.test(clientDocumentNumber) ||
+        deliveryLocation !== deliveryDepartment || deliveryTime !== 'A coordinar con asesor')) ||
       !Array.isArray(body.items) || body.items.length < 1 || body.items.length > 100) return null;
 
   const quantities = new Map();
@@ -94,7 +97,7 @@ function parseOrder(body, state) {
     return sum + Math.round(product.price * 100) * item.quantity;
   }, 0);
   return { clientName, clientPhone, deliveryType, deliveryLocation, deliveryTime,
-    ...(deliveryType === 'otra_ciudad' ? { deliveryDepartment, deliveryAddress } : {}), items, total: totalCents / 100 };
+    ...(deliveryType === 'otra_ciudad' ? { deliveryDepartment, deliveryAddress, clientDocumentNumber } : {}), items, total: totalCents / 100 };
 }
 
 export function createApp({

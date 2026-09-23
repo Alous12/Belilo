@@ -23,6 +23,7 @@ export type DeliveryType = 'ciudad' | 'otra_ciudad';
 export interface OrderInput {
   clientName: string;
   clientPhone: string;
+  clientDocumentNumber?: string;
   deliveryType?: DeliveryType;
   deliveryLocation: string;
   deliveryDepartment?: string;

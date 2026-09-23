@@ -31,7 +31,7 @@
         <div class="product-info"><div class="product-meta"><span class="eyebrow">{{ product.category }}</span><span class="availability" [class.sold-out]="product.stock === 0">{{ product.stock === 0 ? 'Agotado' : product.stock + ' disponibles' }}</span></div>
           <h3>{{ product.name }}</h3><p>{{ product.description }}</p>
           <div class="product-bottom"><strong>{{ product.price | currency:'BOB':'Bs ' }}</strong></div>
-          <div class="product-actions"><button type="button" class="button primary" [disabled]="product.stock === 0" (click)="add(product)">Añadir al carrito</button></div>
+          <div class="product-actions"><button type="button" class="button primary" [disabled]="product.stock === 0" (click)="add(product, true)">Comprar ahora</button><button type="button" class="button secondary" [disabled]="product.stock === 0" (click)="add(product)">Añadir al carrito</button></div>
         </div>
       </article>
     </ng-template>
@@ -45,7 +45,7 @@
       <button type="button" class="product-dialog-close" aria-label="Cerrar detalles" (click)="selectedProduct.set(null)">×</button>
       <div class="product-dialog-image"><app-product-gallery [product]="product" [large]="true" /></div>
       <div class="product-dialog-copy"><p class="eyebrow">{{ product.category }} · BELILO</p><h2>{{ product.name }}</h2><p>{{ product.description }}</p><strong class="dialog-price">{{ product.price | currency:'BOB':'Bs ' }}</strong><span class="availability" [class.sold-out]="product.stock === 0">{{ product.stock === 0 ? 'Agotado' : product.stock + ' piezas disponibles' }}</span>
-        <div class="product-actions"><button type="button" class="button primary" [disabled]="product.stock === 0" (click)="add(product)">Añadir al carrito</button></div>
+        <div class="product-actions"><button type="button" class="button primary" [disabled]="product.stock === 0" (click)="add(product, true)">Comprar ahora</button><button type="button" class="button secondary" [disabled]="product.stock === 0" (click)="add(product)">Añadir al carrito</button></div>
       </div>
     </section>
   </div>
