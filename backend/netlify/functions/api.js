@@ -14,6 +14,7 @@ export async function handler(event, context) {
       adminToken: process.env.BELILO_ADMIN_TOKEN,
       commerceStore: createFirebaseCommerceStore(firebaseDatabase()),
       imageStore: createNetlifyImageStore(getStore('belilo-images')),
+      frontendDir: null,
       imageMaxMb: 4,
     });
     invoke = serverless(app, { binary: ['image/jpeg', 'image/png', 'image/webp'] });

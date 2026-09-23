@@ -1,15 +1,10 @@
 import { timingSafeEqual } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import express from 'express';
 import { createLocalCommerceStore } from './commerce-store.js';
 import { createLocalImageStore, imageType } from './image-store.js';
 import { DEPARTMENTS, withDepartments } from './delivery.js';
-
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const defaultDataFile = join(root, 'data', 'store.json');
-const defaultFrontendDir = resolve(root, '..', 'frontend', 'dist', 'belilo', 'browser');
 
 function failure(res, status, code, message) {
   return res.status(status).json({ error: { code, message } });
@@ -101,7 +96,14 @@ function parseOrder(body, state) {
     ...(deliveryType === 'otra_ciudad' ? { deliveryDepartment, deliveryAddress } : {}), items, total: totalCents / 100 };
 }
 
-export function createApp({ dataFile = defaultDataFile, adminToken, frontendDir = defaultFrontendDir, commerceStore, imageStore, imageMaxMb = 4 } = {}) {
+export function createApp({
+  dataFile = resolve(process.cwd(), 'data', 'store.json'),
+  adminToken,
+  frontendDir = resolve(process.cwd(), '..', 'frontend', 'dist', 'belilo', 'browser'),
+  commerceStore,
+  imageStore,
+  imageMaxMb = 4,
+} = {}) {
   if (!adminToken) throw new Error('Se requiere un token de administración.');
   const store = commerceStore ?? createLocalCommerceStore(dataFile);
   const images = imageStore ?? createLocalImageStore(join(dirname(dataFile), 'images'));
@@ -188,7 +190,7 @@ export function createApp({ dataFile = defaultDataFile, adminToken, frontendDir 
 
   app.use('/api', (_req, res) => failure(res, 404, 'NOT_FOUND', 'Ruta no encontrada.'));
 
-  if (existsSync(join(frontendDir, 'index.html'))) {
+  if (frontendDir && existsSync(join(frontendDir, 'index.html'))) {
     app.use(express.static(frontendDir));
     app.use((req, res, next) => {
       if (req.method === 'GET' && req.accepts('html')) return res.sendFile(join(frontendDir, 'index.html'));
