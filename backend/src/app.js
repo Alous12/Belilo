@@ -5,6 +5,7 @@ import express from 'express';
 import { createLocalCommerceStore } from './commerce-store.js';
 import { createLocalImageStore, imageType } from './image-store.js';
 import { DEPARTMENTS, withDepartments } from './delivery.js';
+import { createMemorySecurityStore } from './security-store.js';
 
 function failure(res, status, code, message) {
   return res.status(status).json({ error: { code, message } });
@@ -102,6 +103,8 @@ export function createApp({
   frontendDir = resolve(process.cwd(), '..', 'frontend', 'dist', 'belilo', 'browser'),
   commerceStore,
   imageStore,
+  securityStore = createMemorySecurityStore(),
+  clientIdentity = req => req.socket.remoteAddress ?? 'unknown',
   imageMaxMb = 4,
 } = {}) {
   if (!adminToken) throw new Error('Se requiere un token de administración.');
@@ -111,13 +114,22 @@ export function createApp({
   app.disable('x-powered-by');
   app.use(express.json({ limit: '1mb' }));
 
-  function requireAdmin(req, res, next) {
+  async function requireAdmin(req, res, next) {
     const supplied = /^Bearer (.+)$/.exec(req.get('authorization') ?? '')?.[1] ?? '';
     const expectedBuffer = Buffer.from(adminToken);
     const suppliedBuffer = Buffer.from(supplied);
-    if (suppliedBuffer.length !== expectedBuffer.length ||
-        !timingSafeEqual(suppliedBuffer, expectedBuffer)) {
-      return failure(res, 401, 'UNAUTHORIZED', 'Se requiere un token de administración válido.');
+    const valid = suppliedBuffer.length === expectedBuffer.length && timingSafeEqual(suppliedBuffer, expectedBuffer);
+    const attempt = await securityStore.attemptAdmin(clientIdentity(req), valid);
+    if (attempt.blocked) {
+      res.set('Retry-After', String(attempt.retryAfter));
+      return failure(res, 429, 'ADMIN_LOCKED', 'Demasiados intentos. Espera 15 minutos antes de volver a entrar.');
+    }
+    if (!attempt.allowed) {
+      return res.status(401).json({ error: {
+        code: 'UNAUTHORIZED',
+        message: 'Contraseña incorrecta.',
+        remainingAttempts: attempt.remaining,
+      } });
     }
     next();
   }
@@ -171,6 +183,11 @@ export function createApp({
 
   app.get('/api/orders', requireAdmin, async (_req, res) => res.json(await store.listOrders()));
   app.post('/api/orders', async (req, res) => {
+    const quota = await securityStore.consumeOrder(clientIdentity(req), String(req.body?.clientPhone ?? '').replace(/\D/g, ''));
+    if (!quota.allowed) {
+      res.set('Retry-After', String(quota.retryAfter));
+      return failure(res, 429, 'ORDER_LIMIT', 'Se alcanzó el límite de pedidos. Inténtalo más tarde.');
+    }
     const order = await store.addOrder(req.body, parseOrder);
     if (!order) return failure(res, 400, 'INVALID_ORDER', 'Revisa los productos y los datos de entrega.');
     return res.status(201).json(order);

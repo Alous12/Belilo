@@ -4,15 +4,20 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, test } from 'node:test';
 import { createApp } from '../src/app.js';
+import { createMemorySecurityStore } from '../src/security-store.js';
 
 const directory = mkdtempSync(join(tmpdir(), 'belilo-api-'));
 const dataFile = join(directory, 'store.json');
 const token = 'test-admin-token';
+const unrestrictedSecurityStore = {
+  async attemptAdmin(_client, valid) { return valid ? { allowed: true } : { allowed: false, remaining: 2 }; },
+  async consumeOrder() { return { allowed: true }; },
+};
 let server;
 let base;
 
 before(async () => {
-  server = createApp({ dataFile, adminToken: token, frontendDir: directory }).listen(0, '127.0.0.1');
+  server = createApp({ dataFile, adminToken: token, frontendDir: directory, securityStore: unrestrictedSecurityStore }).listen(0, '127.0.0.1');
   await new Promise(resolve => server.once('listening', resolve));
   base = `http://127.0.0.1:${server.address().port}/api`;
 });
@@ -93,7 +98,7 @@ test('operaciones administrativas validan token, datos y persistencia', async ()
   assert.equal(changed.status, 200);
   assert.deepEqual(changed.body.times, ['Mediodía']);
 
-  const secondApp = createApp({ dataFile, adminToken: token, frontendDir: directory });
+  const secondApp = createApp({ dataFile, adminToken: token, frontendDir: directory, securityStore: unrestrictedSecurityStore });
   const secondServer = secondApp.listen(0, '127.0.0.1');
   await new Promise(resolve => secondServer.once('listening', resolve));
   const persisted = await fetch(`http://127.0.0.1:${secondServer.address().port}/api/products`).then(response => response.json());
@@ -225,4 +230,37 @@ test('sube varias imágenes de producto y valida envíos a otros departamentos',
     deliveryDepartment: 'Departamento inventado', deliveryAddress: 'Una dirección',
     deliveryTime: 'A coordinar con asesor', items: [{ productId: product.body.id, quantity: 1 }],
   } })).status, 400);
+});
+
+test('bloquea tras tres contraseñas incorrectas y limita pedidos repetidos', async () => {
+  const limited = createApp({
+    dataFile: join(directory, 'limited-store.json'), adminToken: token,
+    frontendDir: directory, securityStore: createMemorySecurityStore(),
+  }).listen(0, '127.0.0.1');
+  await new Promise(resolve => limited.once('listening', resolve));
+  const url = `http://127.0.0.1:${limited.address().port}/api`;
+  try {
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      const response = await fetch(`${url}/admin/session`, { headers: { Authorization: 'Bearer incorrecta' } });
+      assert.equal(response.status, attempt === 3 ? 429 : 401);
+      if (attempt === 3) assert.ok(Number(response.headers.get('retry-after')) > 0);
+    }
+    assert.equal((await fetch(`${url}/admin/session`, { headers: { Authorization: `Bearer ${token}` } })).status, 429);
+
+    const [product] = await fetch(`${url}/products`).then(response => response.json());
+    const settings = await fetch(`${url}/delivery-settings`).then(response => response.json());
+    const body = {
+      clientName: 'Cliente Límite', clientPhone: '76666666',
+      deliveryLocation: settings.zones[0].name, deliveryTime: settings.times[0],
+      items: [{ productId: product.id, quantity: 1 }],
+    };
+    for (let attempt = 1; attempt <= 4; attempt++) {
+      const response = await fetch(`${url}/orders`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      });
+      assert.equal(response.status, attempt === 4 ? 429 : 201);
+    }
+  } finally {
+    await new Promise(resolve => limited.close(resolve));
+  }
 });

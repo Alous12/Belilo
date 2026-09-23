@@ -6,6 +6,7 @@ import { test } from 'node:test';
 import { createApp } from '../src/app.js';
 import { createFirebaseCommerceStore, importLocalSnapshot } from '../src/firebase-store.js';
 import { createSeed } from '../src/seed.js';
+import { createFirestoreSecurityStore } from '../src/security-store.js';
 
 // In-memory implementation of the Firestore operations used by this adapter.
 // The real service account and project connection are tested when configured.
@@ -59,6 +60,26 @@ class MemoryFirestore {
     return result;
   }
 }
+
+test('los límites de acceso y pedidos persisten entre instancias de la Function', async () => {
+  const db = new MemoryFirestore();
+  let currentTime = 1000;
+  const first = createFirestoreSecurityStore(db, () => currentTime);
+  const second = createFirestoreSecurityStore(db, () => currentTime);
+  assert.equal((await first.attemptAdmin('cliente', false)).remaining, 2);
+  assert.equal((await second.attemptAdmin('cliente', false)).remaining, 1);
+  assert.equal((await first.attemptAdmin('cliente', false)).blocked, true);
+  assert.equal((await second.attemptAdmin('cliente', true)).blocked, true);
+  currentTime += 15 * 60 * 1000 + 1;
+  assert.equal((await second.attemptAdmin('cliente', true)).allowed, true);
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    assert.equal((await first.consumeOrder('cliente', '70000000')).allowed, true);
+  }
+  assert.equal((await second.consumeOrder('cliente', '70000000')).allowed, false);
+  currentTime += 60 * 60 * 1000 + 1;
+  assert.equal((await second.consumeOrder('cliente', '70000000')).allowed, true);
+});
 
 test('Firestore importa datos locales y conserva pedidos, protección y stock', async () => {
   const db = new MemoryFirestore();

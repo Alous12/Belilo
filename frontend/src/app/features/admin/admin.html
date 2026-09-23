@@ -9,8 +9,8 @@
     <p class="muted">Ingresa la contraseña de administración para continuar.</p>
     <form (ngSubmit)="login()" class="stack">
       <label>Contraseña<input name="adminPassword" type="password" required autocomplete="off" [(ngModel)]="loginToken" placeholder="Tu contraseña"></label>
-      @if (loginError()) { <p class="error" role="alert">{{ loginError() }}</p> }
-      <button type="submit" class="button primary full" [disabled]="!loginToken.trim() || loginPending()">{{ loginPending() ? 'Comprobando...' : 'Entrar al panel' }}</button>
+      @if (loginError()) { <p class="error" role="alert">{{ loginError() }} @if (loginLocked()) { Espera aproximadamente {{ remainingMinutes() }} min. }</p> }
+      <button type="submit" class="button primary full" [disabled]="!loginToken.trim() || loginPending() || loginLocked()">{{ loginPending() ? 'Comprobando...' : loginLocked() ? 'Acceso temporalmente bloqueado' : 'Entrar al panel' }}</button>
     </form>
   </section>
 } @else {
@@ -50,7 +50,7 @@
         @else { <div class="admin-items">@for (item of inventoryProducts(); track item.id) {
           <article class="admin-item"><div class="cart-thumb">@if (primaryImage(item)) { <img [src]="primaryImage(item)" [alt]="item.name"> }</div>
             <div class="admin-item-copy"><span class="eyebrow">{{ item.category }}</span><h3>{{ item.name }}</h3><div class="inventory-meta"><strong>{{ item.price | currency:'BOB':'Bs ' }}</strong><span class="stock-pill" [class.out-of-stock]="item.stock === 0">{{ item.stock === 0 ? 'Sin stock' : item.stock + ' disponibles' }}</span></div></div>
-            <div class="item-actions"><button type="button" class="text-button" [disabled]="uploadingImages()" (click)="edit(item)">Editar</button><button type="button" class="text-button danger" [disabled]="uploadingImages()" (click)="deleteProduct(item)">Eliminar</button></div>
+            <div class="item-actions"><button type="button" class="text-button" [disabled]="uploadingImages() || deletingProduct()" (click)="edit(item)">Editar</button><button type="button" class="text-button danger" [disabled]="uploadingImages() || deletingProduct()" (click)="deleteProduct(item, $event)">Eliminar</button></div>
           </article>
         }</div> }
       </section>
@@ -87,4 +87,21 @@
       </div>
     }
   }
+}
+
+@if (pendingDelete(); as item) {
+  <div class="confirm-layer">
+    <button type="button" class="confirm-backdrop" aria-label="Cancelar eliminación" [disabled]="deletingProduct()" (click)="cancelDelete()"></button>
+    <section class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title" aria-describedby="delete-description">
+      <span class="confirm-icon" aria-hidden="true">✦</span>
+      <p class="eyebrow">Confirmar eliminación</p>
+      <h2 id="delete-title">¿Eliminar esta pieza?</h2>
+      <p id="delete-description">Se quitará <strong>{{ item.name }}</strong> del catálogo. Esta acción no se puede deshacer.</p>
+      @if (deleteError()) { <p class="error" role="alert">{{ deleteError() }}</p> }
+      <div class="confirm-actions">
+        <button #cancelDeleteButton type="button" class="button secondary" [disabled]="deletingProduct()" (click)="cancelDelete()">Conservar producto</button>
+        <button type="button" class="button danger-button" [disabled]="deletingProduct()" (click)="confirmDeleteProduct()">{{ deletingProduct() ? 'Eliminando...' : 'Sí, eliminar' }}</button>
+      </div>
+    </section>
+  </div>
 }

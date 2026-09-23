@@ -1,6 +1,6 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, computed, ElementRef, HostListener, inject, OnDestroy, OnInit, signal, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { concatMap, finalize, from } from 'rxjs';
 import { CommerceRepository } from '../../core/commerce.repository';
@@ -23,6 +23,9 @@ export class Admin implements OnInit, OnDestroy {
   private readonly api = inject(CommerceRepository);
   private readonly auth = inject(AdminAuthService);
   private refreshTimer?: ReturnType<typeof setInterval>;
+  private clockTimer?: ReturnType<typeof setInterval>;
+  private deleteTrigger?: HTMLElement;
+  @ViewChild('cancelDeleteButton') private cancelDeleteButton?: ElementRef<HTMLButtonElement>;
   readonly catalog = inject(CatalogService);
   readonly primaryImage = primaryImage;
   readonly categories = computed(() => [...new Set(['Manillas', 'Collares', 'Aretes', 'Anillos', ...this.catalog.products().map(item => item.category).filter(Boolean)])].sort((a, b) => a.localeCompare(b, 'es')));
@@ -44,6 +47,13 @@ export class Admin implements OnInit, OnDestroy {
   readonly authenticated = signal(false);
   readonly loginPending = signal(false);
   readonly loginError = signal('');
+  readonly loginLockedUntil = signal(0);
+  readonly now = signal(Date.now());
+  readonly loginLocked = computed(() => this.loginLockedUntil() > this.now());
+  readonly remainingMinutes = computed(() => Math.ceil((this.loginLockedUntil() - this.now()) / 60000));
+  readonly pendingDelete = signal<Product | null>(null);
+  readonly deletingProduct = signal(false);
+  readonly deleteError = signal('');
   loginToken = '';
   editingId: Product['id'] | null = null;
   product: ProductInput = blankProduct();
@@ -60,13 +70,17 @@ export class Admin implements OnInit, OnDestroy {
     this.refreshTimer = setInterval(() => {
       if (this.authenticated() && this.tab() === 'orders' && !this.ordersLoading()) this.loadOrders(true);
     }, 15000);
+    this.clockTimer = setInterval(() => this.now.set(Date.now()), 1000);
   }
 
-  ngOnDestroy(): void { if (this.refreshTimer) clearInterval(this.refreshTimer); }
+  ngOnDestroy(): void {
+    if (this.refreshTimer) clearInterval(this.refreshTimer);
+    if (this.clockTimer) clearInterval(this.clockTimer);
+  }
 
   login(): void {
     const token = this.loginToken.trim();
-    if (token && !this.loginPending()) this.verifyToken(token);
+    if (token && !this.loginPending() && !this.loginLocked()) this.verifyToken(token);
   }
 
   logout(): void {
@@ -88,10 +102,23 @@ export class Admin implements OnInit, OnDestroy {
         this.catalog.load(true);
         this.loadOrders();
       },
-      error: () => {
+      error: (error: HttpErrorResponse) => {
         this.auth.clear();
         this.authenticated.set(false);
-        this.loginError.set('Contraseña incorrecta o servidor no disponible.');
+        if (error.status === 429) {
+          const seconds = Number(error.headers.get('Retry-After')) || 900;
+          this.now.set(Date.now());
+          this.loginLockedUntil.set(this.now() + seconds * 1000);
+          this.loginError.set('Se agotaron los 3 intentos. Vuelve a intentarlo más tarde.');
+        } else if (error.status === 401) {
+          const remaining = error.error?.error?.remainingAttempts;
+          const attemptsText = Number.isInteger(remaining)
+            ? remaining === 1 ? 'Queda 1 intento.' : `Quedan ${remaining} intentos.`
+            : 'Inténtalo de nuevo.';
+          this.loginError.set(`Contraseña incorrecta. ${attemptsText}`);
+        } else {
+          this.loginError.set('No se pudo conectar con el servidor. Inténtalo de nuevo.');
+        }
         this.loginPending.set(false);
       },
     });
@@ -168,13 +195,56 @@ export class Admin implements OnInit, OnDestroy {
     });
   }
 
-  deleteProduct(item: Product): void {
-    if (!confirm(`¿Eliminar ${item.name}?`)) return;
+  deleteProduct(item: Product, event: Event): void {
+    if (this.deletingProduct()) return;
+    this.deleteTrigger = event.currentTarget as HTMLElement;
+    this.pendingDelete.set(item);
+    this.deleteError.set('');
+    setTimeout(() => this.cancelDeleteButton?.nativeElement.focus(), 0);
+  }
+
+  cancelDelete(): void {
+    if (this.deletingProduct()) return;
+    this.pendingDelete.set(null);
+    setTimeout(() => this.deleteTrigger?.focus(), 0);
+  }
+
+  confirmDeleteProduct(): void {
+    const item = this.pendingDelete();
+    if (!item || this.deletingProduct()) return;
+    this.deletingProduct.set(true);
+    this.deleteError.set('');
     this.error.set(''); this.success.set('');
     this.api.deleteProduct(item.id).subscribe({
-      next: () => { this.catalog.remove(item.id); this.success.set('Producto eliminado.'); },
-      error: () => this.error.set('No se pudo eliminar el producto.'),
+      next: () => {
+        this.catalog.remove(item.id);
+        if (this.editingId === item.id) this.resetForm();
+        this.pendingDelete.set(null);
+        this.success.set('Producto eliminado.');
+        this.deletingProduct.set(false);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.deleteError.set(error.error?.error?.message ?? 'No se pudo eliminar el producto. Inténtalo de nuevo.');
+        this.deletingProduct.set(false);
+      },
     });
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  handleDeleteDialogKey(event: KeyboardEvent): void {
+    if (!this.pendingDelete()) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.cancelDelete();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    const buttons = [...document.querySelectorAll<HTMLButtonElement>('.confirm-dialog button:not(:disabled)')];
+    if (!buttons.length) return;
+    const first = buttons[0];
+    const last = buttons[buttons.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
   }
 
   loadOrders(silent = false): void {

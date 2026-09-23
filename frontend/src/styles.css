@@ -15,11 +15,9 @@ app-root { display: flex; flex-direction: column; min-height: 100vh; }
 .page { flex: 1; padding-block: 42px 90px; }
 .site-header { position: sticky; z-index: 20; top: 0; border-bottom: 1px solid color-mix(in srgb, var(--color-border) 31%, transparent); background: color-mix(in srgb, var(--color-header) 93%, transparent); backdrop-filter: blur(18px); }
 .nav { min-height: 78px; display: flex; align-items: center; justify-content: space-between; gap: 28px; }
-.brand { font-family: 'Cinzel', serif; font-size: 26px; font-weight: 700; letter-spacing: .16em; color: var(--color-text); }
+.brand { border: 0; padding: 0; background: none; font-family: 'Cinzel', serif; font-size: 26px; font-weight: 700; letter-spacing: .16em; color: var(--color-text); }
+.brand:focus-visible { outline: 2px solid var(--color-accent-hover); outline-offset: 6px; border-radius: 4px; }
 .brand span { color: var(--color-accent); }
-.nav-links { display: flex; align-items: center; gap: 8px; overflow-x: auto; }
-.nav-links a { white-space: nowrap; padding: 11px 16px; border-radius: 999px; color: var(--color-text-muted); font-size: 13px; font-weight: 700; transition: .2s; }
-.nav-links a:hover, .nav-links a.active { background: color-mix(in srgb, var(--color-accent) 11%, transparent); color: var(--color-accent-hover); }
 .count { display: inline-flex; min-width: 19px; height: 19px; align-items: center; justify-content: center; margin-left: 3px; border-radius: 50%; background: var(--color-accent); color: var(--color-accent-ink); font-size: 11px; }
 .site-footer { display: flex; justify-content: space-between; padding-block: 25px; border-top: 1px solid color-mix(in srgb, var(--color-border) 22%, transparent); color: var(--color-text-subtle); font-size: 12px; }
 h1, h2, h3, p { margin-top: 0; }
@@ -89,7 +87,7 @@ textarea { resize: vertical; }
 .summary-line strong { white-space: nowrap; color: var(--color-price); }
 .summary-line.total { margin-bottom: 20px; font-size: 16px; }
 .summary > .muted { margin-block: 18px; font-size: 12px; }
-.quiet-link { display: block; margin-top: 18px; color: var(--color-accent-hover); font-size: 12px; text-align: center; text-decoration: underline; }
+.quiet-link { display: block; width: 100%; margin-top: 18px; border: 0; background: none; color: var(--color-accent-hover); font-size: 12px; text-align: center; text-decoration: underline; }
 .form-panel h2 { font-size: 23px; }
 .form-panel h2:not(:first-child) { margin-top: 34px; }
 .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 17px; margin-bottom: 24px; }
@@ -133,7 +131,6 @@ label input, label select, label textarea { display: block; margin-top: 7px; }
 
 /* Storefront refinements */
 .nav { gap: 20px; }
-.nav-links { margin-left: auto; }
 .nav-cart { display: inline-flex; align-items: center; gap: 8px; flex: 0 0 auto; border: 1px solid color-mix(in srgb, var(--color-accent) 44%, transparent); border-radius: 999px; padding: 10px 16px; background: color-mix(in srgb, var(--color-accent) 11%, transparent); color: var(--color-accent-hover); font-size: 12px; font-weight: 800; }
 .nav-cart:hover { background: color-mix(in srgb, var(--color-accent) 19%, transparent); }
 .nav-cart svg { width: 20px; height: 20px; }
@@ -160,7 +157,7 @@ label input, label select, label textarea { display: block; margin-top: 7px; }
 .product-bottom strong { font-family: 'Cinzel', serif; font-size: 18px; }
 .availability { color: var(--color-success-text); font-size: 10px; font-weight: 700; white-space: nowrap; }
 .availability.sold-out { color: var(--color-danger); }
-.product-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+.product-actions { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 16px; }
 .product-actions .button { min-width: 0; min-height: 42px; padding: 9px 10px; font-size: 11px; }
 .catalog-notice { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .catalog-notice .text-button { color: inherit; white-space: nowrap; }
@@ -275,7 +272,6 @@ label input, label select, label textarea { display: block; margin-top: 7px; }
 @media (max-width: 700px) { .collection-grid { grid-template-columns: 1fr; } .product-image { height: 300px; } }
 @media (max-width: 720px) {
   .nav { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 7px; }
-  .nav-links { grid-row: 2; grid-column: 1 / -1; width: 100%; margin: 0; justify-content: center; }
   .nav-cart { grid-column: 2; grid-row: 1; }
   .hero-product-img { min-height: 230px; }
   .hero-art::after { background: linear-gradient(0deg, color-mix(in srgb, var(--color-page) 55%, transparent), transparent 50%); }
@@ -342,3 +338,15 @@ label input, label select, label textarea { display: block; margin-top: 7px; }
 .zone-image-preview { display: block; width: 100px; height: 80px; margin: 10px 0; border-radius: 9px; object-fit: cover; }
 @media (max-width: 700px) { .product-gallery { height: 300px; } .product-gallery.large { min-height: 230px; max-height: 40vh; } }
 @media (max-width: 470px) { .delivery-mode-grid { grid-template-columns: 1fr; } .admin-image-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.confirm-layer { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 18px; }
+.confirm-backdrop { position: absolute; inset: 0; width: 100%; border: 0; border-radius: 0; background: color-mix(in srgb, var(--color-page) 76%, transparent); backdrop-filter: blur(8px); }
+.confirm-dialog { position: relative; width: min(100%, 460px); border: 1px solid color-mix(in srgb, var(--color-danger) 46%, transparent); border-radius: 22px; padding: clamp(23px, 5vw, 34px); background: var(--color-surface); box-shadow: 0 28px 80px color-mix(in srgb, var(--color-shadow) 72%, transparent); }
+.confirm-icon { display: grid; place-items: center; width: 45px; height: 45px; margin-bottom: 18px; border-radius: 50%; background: var(--color-danger-bg); color: var(--color-danger-text); font-size: 23px; }
+.confirm-dialog h2 { margin-bottom: 12px; font-size: clamp(23px, 4vw, 30px); }
+.confirm-dialog > p:not(.eyebrow):not(.error) { color: var(--color-text-soft); line-height: 1.65; }
+.confirm-dialog strong { color: var(--color-text); }
+.confirm-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+.confirm-actions .button { flex: 1 1 170px; }
+.button.danger-button { border-color: var(--color-danger); background: var(--color-danger-bg); color: var(--color-danger-text); }
+.button.danger-button:hover { background: color-mix(in srgb, var(--color-danger) 35%, var(--color-danger-bg)); }

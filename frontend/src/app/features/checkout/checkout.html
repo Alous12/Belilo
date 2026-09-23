@@ -6,13 +6,14 @@
       <p>Tu pedido <strong>#{{ confirmed.id }}</strong> ya aparece en nuestro panel. Total confirmado: <strong class="price">{{ confirmed.total | currency:'BOB':'Bs ' }}</strong>.</p>
       @if (links().length) {
         <div class="whatsapp-options"><p>Para enviar los detalles y coordinar la entrega, toca el enlace del asesor:</p>
-          @for (link of links(); track link.href) { <a class="button whatsapp-button full" [href]="link.href" target="_blank" rel="noopener noreferrer">Enviar pedido por WhatsApp · {{ link.label }} ↗</a> }
+          @for (link of links(); track link.href) { <a class="button whatsapp-button full" [href]="link.href" target="_blank" rel="noopener noreferrer" (click)="openWhatsapp($event)">Enviar pedido por WhatsApp · {{ link.label }} ↗</a> }
+          @if (whatsappNotice()) { <p class="field-hint" role="status">{{ whatsappNotice() }}</p> }
         </div>
       } @else { <p>Tu pedido quedó registrado. La tienda se pondrá en contacto contigo para coordinar la entrega.</p> }
-      <a routerLink="/inicio" class="quiet-link">Seguir explorando</a>
+      <button type="button" class="quiet-link" (click)="drawer.close()">Seguir explorando</button>
     </div>
   } @else if (!cart.items().length) {
-    <div class="empty-state purchase-empty"><span class="empty-icon">✦</span><strong>Tu bolsa está esperando una pieza especial</strong><p>Explora la colección y añade tus favoritas.</p><a routerLink="/inicio" class="button primary">Ver colección</a></div>
+    <div class="empty-state purchase-empty"><span class="empty-icon">✦</span><strong>Tu bolsa está esperando una pieza especial</strong><p>Explora la colección y añade tus favoritas.</p><button type="button" class="button primary" (click)="drawer.close()">Ver colección</button></div>
   } @else {
     <div class="purchase-layout">
       <div class="purchase-main">

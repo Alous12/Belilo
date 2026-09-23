@@ -79,4 +79,6 @@ La compra permite **entrega en la ciudad** mediante los puntos y horarios config
 
 Las rutas públicas son `GET /api/products`, `GET /api/delivery-settings` y `POST /api/orders`. Las operaciones de catálogo, los ajustes, `GET /api/orders` y `PATCH /api/orders/:id/status` requieren `Authorization: Bearer <BELILO_ADMIN_TOKEN>`.
 
+Tras **3 contraseñas incorrectas desde una misma IP**, el acceso administrativo se bloquea durante 15 minutos (`429` con `Retry-After`). Para reducir pedidos repetidos y enlaces de WhatsApp generados desde la tienda, se admiten como máximo **6 pedidos por IP** y **3 por teléfono** cada hora. En Netlify, los contadores se guardan en Firestore y persisten entre ejecuciones de la Function; en desarrollo local se mantienen en memoria. Ocultar el enlace de Admin en Angular no sustituye esta comprobación del backend.
+
 Ejecuta `npm.cmd --prefix backend test` para probar el contrato de la API y las reglas de stock en el modo local.

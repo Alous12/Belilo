@@ -1,15 +1,13 @@
 # BELILO · frontend Angular
 
-Aplicación Angular 21 organizada por funciones. Las páginas son rutas independientes:
+Aplicación Angular 21 organizada por funciones. La compra se completa en el carrito lateral:
 
 | Ruta | Función |
 | --- | --- |
-| `/inicio` | Catálogo, categorías, búsqueda y compra de piezas |
-| `/carrito` | Resumen completo de la selección |
-| `/compra` | Compra en página completa |
-| `/admin` | Inventario, estados de pedido y configuración de entregas |
+| `/inicio` | Catálogo, categorías y búsqueda de piezas |
+| `/admin` | Inventario, estados de pedido y configuración de entregas; se abre tras pulsar cuatro veces BELILO en la cabecera y pedir la contraseña |
 
-El botón **Mi bolsa** abre el carrito a la derecha desde cualquier página. En ese panel se revisan cantidades, datos de contacto, ubicación y horario. Después de registrar el pedido, el comprador recibe un enlace de WhatsApp con el mensaje preparado para cada asesor configurado. Debe tocar el enlace y enviarlo en WhatsApp; abrir el enlace no envía el mensaje automáticamente.
+El botón **Mi bolsa** abre el carrito a la derecha desde cualquier página. En ese panel se revisan cantidades, datos de contacto, ubicación y horario. Después de registrar el pedido, el comprador recibe un enlace de WhatsApp con el mensaje preparado para cada asesor configurado. Debe tocar el enlace y enviarlo en WhatsApp; abrir el enlace no envía el mensaje automáticamente. El sitio limita la reapertura del enlace durante un minuto y el backend limita los pedidos repetidos.
 
 ## Colores del sitio
 
@@ -35,7 +33,7 @@ npm.cmd --prefix frontend start
 
 La página se abre en `http://127.0.0.1:4200/` y el backend escucha en `http://127.0.0.1:3000`. `npm start` dentro de `frontend` inicia solo Angular; el proxy de desarrollo conecta `/api` con el backend ya iniciado. Si el puerto 4200 está ocupado, usa `npm.cmd --prefix frontend start -- --port 4300` y abre `http://127.0.0.1:4300/`. Para iniciar ambos desde `frontend` con un solo comando, usa `npm run dev:all`; este comando carga `backend/.env` para activar Firestore si está configurado. La compilación de producción se genera con `npm run build`.
 
-El backend local contiene productos iniciales y guarda los cambios en `../backend/data/store.json`. En `/admin` ingresa la contraseña local **CACAHUATE** para gestionar productos, pedidos y entregas. La sesión se conserva solo durante la sesión de la pestaña. El backend escucha únicamente en `127.0.0.1` para desarrollo local.
+El backend local contiene productos iniciales y guarda los cambios en `../backend/data/store.json`. Pulsa cuatro veces el nombre BELILO de la cabecera para abrir Admin; en desarrollo local, la contraseña predeterminada es **CACAHUATE**. La sesión se conserva solo durante la sesión de la pestaña. El backend escucha únicamente en `127.0.0.1` para desarrollo local.
 
 ## Organización
 
@@ -75,6 +73,6 @@ Las listas pueden ser un array JSON o `{ "data": [...] }`. Los productos tienen 
 
 La compra envía `clientName`, `clientPhone`, `deliveryType`, `deliveryLocation`, `deliveryTime` e `items: [{ productId, quantity }]`. Para `otra_ciudad` también envía `deliveryDepartment` y `deliveryAddress`; el horario queda `A coordinar con asesor`. El backend calcula el total de productos, valida las existencias y conserva nombre y precio de cada pieza en el pedido. El carrito se conserva en `localStorage` para que sobreviva a una recarga y se vacía únicamente cuando el pedido se registra con éxito. El pedido comienza como `pendiente`; al marcarlo `entregado` se descuenta el stock una sola vez. Al marcarlo `no_entregado`, el stock permanece igual. Los estados cerrados no se pueden volver a cambiar.
 
-**Seguridad:** el backend exige la contraseña para las operaciones administrativas (`POST/PUT/DELETE /products`, `GET /orders`, `PUT /delivery-settings`, `PATCH /orders/:id/status`) y calcula el total del pedido con los precios actuales. `CACAHUATE` es la contraseña predeterminada solo en desarrollo local, también si se usa Firestore; en producción se exige `BELILO_ADMIN_TOKEN`. La vista `/admin` por sí sola no es un control de acceso. Firestore se accede desde el backend mediante credenciales del servidor, sin exponerlas a Angular.
+**Seguridad:** el backend exige la contraseña para las operaciones administrativas (`POST/PUT/DELETE /products`, `GET /orders`, `PUT /delivery-settings`, `PATCH /orders/:id/status`) y calcula el total del pedido con los precios actuales. `CACAHUATE` es la contraseña predeterminada solo en desarrollo local, también si se usa Firestore; en producción se exige `BELILO_ADMIN_TOKEN`. Tras 3 intentos incorrectos desde la misma IP, el backend bloquea el acceso durante 15 minutos. Se limitan los pedidos a 6 por IP y 3 por teléfono por hora. La vista `/admin` oculta no es por sí sola un control de acceso. Firestore se accede desde el backend mediante credenciales del servidor, sin exponerlas a Angular.
 
 La compilación de producción genera el frontend. Para publicarlo junto con la API y guardar fotos persistentes en Netlify Blobs, sigue la [guía de Netlify](../backend/README.md#publicar-en-netlify-sin-firebase-storage). El servidor de `../backend` también puede servir esos archivos junto con `/api` en otro alojamiento usando almacenamiento local o Firestore.

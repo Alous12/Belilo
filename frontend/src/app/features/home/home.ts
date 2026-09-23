@@ -33,13 +33,13 @@ export class Home implements OnInit {
   search(event: Event): void { this.query.set((event.target as HTMLInputElement).value); }
   add(product: Product): void {
     if (product.stock <= 0) return;
+    const count = this.cart.count();
     this.cart.add(product);
+    if (this.cart.count() === count) {
+      this.notice.set('Ya añadiste todas las unidades disponibles de esta pieza.');
+      return;
+    }
     this.notice.set(`${product.name} se añadió al carrito.`);
-  }
-
-  buyNow(product: Product): void {
-    if (product.stock <= 0) return;
-    this.cart.add(product);
     this.selectedProduct.set(null);
     this.drawer.open();
   }
